@@ -1,0 +1,41 @@
+name: DevOps CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make scripts executable
+        run: chmod +x app/app.sh scripts/*.sh tests/*.sh
+      - name: Validate Bash
+        run: ./scripts/lint.sh
+
+  test:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make scripts executable
+        run: chmod +x app/app.sh scripts/*.sh tests/*.sh
+      - name: Run tests
+        run: ./tests/test.sh
+
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t devops-ci-app:ci .
+      - name: Smoke test help
+        run: docker run --rm devops-ci-app:ci help
+      - name: Smoke test system info
+        run: docker run --rm devops-ci-app:ci system-info
+      - name: Invalid command must fail
+        run: '! docker run --rm devops-ci-app:ci invalid-command'

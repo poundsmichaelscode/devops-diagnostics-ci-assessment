@@ -1,0 +1,6 @@
+services:
+  app:
+    build:
+      context: .
+    image: devops-ci-app:local
+    command: ["help"]
