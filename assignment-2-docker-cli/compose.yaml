@@ -1,0 +1,6 @@
+services:
+  diagnostic:
+    build:
+      context: .
+    image: diagnostic-cli:local
+    command: ["help"]
