@@ -1,0 +1,5 @@
+.DS_Store
+*.log
+/tmp/
+assignment-1-linux-bash/logs/*.log
+!assignment-1-linux-bash/logs/.gitkeep
