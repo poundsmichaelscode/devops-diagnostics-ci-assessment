@@ -1,0 +1,62 @@
+name: DevOps Assessment CI
+
+on:
+  push:
+    branches:
+      - main
+      - feature/assessment-validation
+  pull_request:
+    branches:
+      - main
+
+defaults:
+  run:
+    working-directory: assignment-3-ci-pipeline
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Make scripts executable
+        run: chmod +x app/app.sh scripts/*.sh tests/*.sh
+
+      - name: Validate Bash scripts
+        run: ./scripts/lint.sh
+
+  test:
+    needs: validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Make scripts executable
+        run: chmod +x app/app.sh scripts/*.sh tests/*.sh
+
+      - name: Run tests
+        run: ./tests/test.sh
+
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t devops-ci-app:ci .
+
+      - name: Test help command
+        run: docker run --rm devops-ci-app:ci help
+
+      - name: Test system-info command
+        run: docker run --rm devops-ci-app:ci system-info
+
+      - name: Ensure invalid command fails
+        run: '! docker run --rm devops-ci-app:ci invalid-command'
